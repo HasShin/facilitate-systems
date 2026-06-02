@@ -66,6 +66,27 @@ streamlit run プログラム/2026/NewApp.py
 
 ## 旧アプローチ（2025/）
 
-Fine-tuningしたSentenceTransformerモデルとsklearn分類器を用いて、発言から直接ロールを推論する方式を試みました。現在は推論を停止し（`ENABLE_MODEL_INFERENCE = False`）、スコアベースの方式に移行しています。
+Fine-tuningしたSentenceTransformerモデルとsklearn分類器を組み合わせ、発言から直接ロールを推論する方式を試みました。現在は推論を停止し（`ENABLE_MODEL_INFERENCE = False`）、スコアベースの現行方式に移行しています。
+
+### パイプライン
+
+```
+ラベル済みCSV → labo.py（データ統合）
+             → generate_label_maps.py（ラベルID変換）
+             → SentenceTransformerのFine-tuning（別途実施）
+             → train_all_classifiers.py（分類器の学習）
+             → aplication.py（Streamlitアプリで推論）
+```
+
+### 各ファイルの役割
+
+| ファイル | 役割 |
+|----------|------|
+| `labo.py` | 複数のラベル済みCSVを結合して学習データを作成 |
+| `generate_label_maps.py` | ロールラベルをID変換するマップを生成し `label_maps.pkl` として保存 |
+| `train_all_classifiers.py` | Fine-tuned Sentence-BERTで発言をベクトル化し、思考系・対人関係系・行動系それぞれにLogistic Regression分類器を学習 |
+| `output_belbin_multidim.csv` | 学習に使用したラベル済みデータ（発言 + 3系統のロールラベル） |
+| `aplication.py` | 上記で学習したモデル・分類器を使ってリアルタイム推論するStreamlitアプリ（現在停止中） |
+| `fine_tuned_belbin/` | Fine-tuningしたSentenceTransformerのモデル設定ファイル（モデル重みは容量超過のため除外） |
 
 → [プログラム/2025/](プログラム/2025/) を参照
